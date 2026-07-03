@@ -3,7 +3,7 @@ import { FrontCameraPreview } from './FrontCameraPreview'
 
 export function CameraFeed({ rearVideoRef, rearError }) {
   return (
-    <div className="relative isolate mx-4 mt-3 h-[537px] overflow-hidden rounded-[32px] bg-bereal-surface">
+    <div className="relative isolate mx-4 mt-[95px] h-[537px] shrink-0 overflow-hidden rounded-[32px] bg-bereal-surface">
       {/* relative + z-0: actively-playing <video> is promoted to its own
           compositor layer in Chrome and can paint above z-indexed siblings
           regardless of DOM/z-index order unless it's pinned into the

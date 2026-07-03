@@ -36,7 +36,7 @@ export function CameraScreen({ onBack, onCapture }) {
       <CameraFeed rearVideoRef={rearVideoRef} rearError={rearError} />
 
       <ModeToggle />
-      <div className="pb-8 pt-2">
+      <div className="pb-2 pt-2">
         <CaptureButton onClick={handleCapture} />
       </div>
     </div>

@@ -12,7 +12,7 @@ export function FriendsScreen({
   hideNoteBadge,
 }) {
   return (
-    <div className="relative flex h-full flex-col overflow-y-auto bg-bereal-black pb-28 pt-12">
+    <div className="relative flex h-full flex-col bg-bereal-black pb-[95px] pt-12">
       <Header />
       <div className="mt-3">
         <SearchBar />

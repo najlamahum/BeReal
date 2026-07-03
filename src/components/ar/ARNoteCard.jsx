@@ -10,11 +10,23 @@ const BACK_TEXT = 'This is a new feature I made on BeReal! Pretty cool right?'
 // capture button in ARScreen, not on the card itself. Flip is local UI
 // state though, since it's a self-contained interaction on the card once
 // revealed (matches Figma's friends-6/7 "rotate" button).
-export function ARNoteCard({ state }) {
+//
+// offset: device-orientation parallax in CSS px (ARScreen's live-camera
+// mode only; {x:0,y:0} otherwise). Applied via the standalone CSS
+// `translate` property rather than folding it into `transform`, so it
+// composes additively with the -translate-x-1/2/-translate-y-1/2
+// centering below instead of one clobbering the other. It's set on this
+// outer wrapper — above the flip layer — so it applies to both faces,
+// keeping the card "world-anchored" at the same spot whichever side is
+// showing.
+export function ARNoteCard({ state, offset = { x: 0, y: 0 } }) {
   const [flipped, setFlipped] = useState(false)
 
   return (
-    <div className="absolute left-1/2 top-1/2 w-[134px] -translate-x-1/2 -translate-y-1/2">
+    <div
+      className="absolute left-1/2 top-1/2 w-[134px] -translate-x-1/2 -translate-y-1/2"
+      style={{ translate: `${offset.x}px ${offset.y}px` }}
+    >
       <div className="mx-auto mb-2 w-fit">
         {state === 'success' ? (
           <div className="flex items-center gap-1.5 whitespace-nowrap rounded-full bg-[#F5C518] px-3 py-1.5">
@@ -42,7 +54,7 @@ export function ARNoteCard({ state }) {
           <div
             className={
               'absolute inset-0 overflow-hidden rounded-[10px] ' +
-              (state === 'revealed' ? 'bg-black' : 'bg-[#d9d9d9]')
+              (state === 'revealed' ? 'bg-black border border-black' : 'bg-[#d9d9d9]')
             }
             style={{ backfaceVisibility: 'hidden' }}
           >
@@ -56,7 +68,7 @@ export function ARNoteCard({ state }) {
                 <img
                   src={frontCamera}
                   alt=""
-                  className="absolute left-2 top-[7px] h-[75px] w-[56px] rounded-[6px] border border-white object-cover"
+                  className="absolute left-2 top-[7px] h-[75px] w-[56px] rounded-[6px] border border-black object-cover"
                 />
               </>
             ) : (
@@ -76,7 +88,7 @@ export function ARNoteCard({ state }) {
             className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-[10px] bg-white px-3"
             style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
           >
-            <p className="text-center text-[13px] font-medium text-black">{BACK_TEXT}</p>
+            <p className="text-left text-[13px] font-medium text-black">{BACK_TEXT}</p>
           </div>
         </div>
 
@@ -89,7 +101,7 @@ export function ARNoteCard({ state }) {
             aria-label="Flip note"
             className="absolute bottom-[5px] right-[5px] z-10 flex h-[35px] w-[35px] items-center justify-center rounded-full bg-white/20"
           >
-            <RefreshCw size={16} className="text-white" />
+            <RefreshCw size={16} className="text-black" />
           </button>
         )}
       </div>

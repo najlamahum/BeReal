@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { RefreshCw } from 'lucide-react'
 import { MayaPill } from '../shared/MayaPill'
+import backCamera from '../../assets/back_camera_1.png'
+import frontCamera from '../../assets/frlont_camera_1.png'
 
 const BACK_TEXT = 'This is a new feature I made on BeReal! Pretty cool right?'
 
@@ -54,19 +56,26 @@ export function RevealedNotePopup({ onDismiss }) {
           }}
         >
           <div
-            className="absolute inset-0 overflow-hidden rounded-[10px] bg-black"
+            className="absolute inset-0 overflow-hidden rounded-[10px] bg-black border border-black"
             style={{ backfaceVisibility: 'hidden' }}
           >
-            <span className="flex h-full w-full items-center justify-center px-2 text-center text-[9px] font-medium text-white">
-              Photo goes here
-            </span>
+            <img
+              src={backCamera}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+            <img
+              src={frontCamera}
+              alt=""
+              className="absolute left-1 top-1 h-[35px] w-[26px] rounded-[4px] border border-black object-cover"
+            />
           </div>
 
           <div
             className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-[10px] bg-white px-1.5"
             style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
           >
-            <p className="text-center text-[8px] font-medium leading-tight text-black">
+            <p className="text-left text-[8px] font-medium leading-tight text-black">
               {BACK_TEXT}
             </p>
           </div>
@@ -80,7 +89,7 @@ export function RevealedNotePopup({ onDismiss }) {
           aria-label="Flip note"
           className="absolute bottom-1 right-1 z-10 flex h-4 w-4 items-center justify-center rounded-full bg-white/20"
         >
-          <RefreshCw size={9} className="text-white" />
+          <RefreshCw size={9} className="text-black" />
         </button>
       </div>
     </div>

@@ -21,7 +21,7 @@ const GLASS_STYLE = {
 
 export function TabBar({ active, onCameraPress }) {
   return (
-    <div className="absolute inset-x-0 bottom-6 mx-4">
+    <div className="absolute inset-x-0 bottom-[10px] mx-4">
       <div
         className="flex items-center justify-between px-4 py-2.5"
         style={GLASS_STYLE}
