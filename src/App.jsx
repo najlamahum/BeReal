@@ -1,6 +1,4 @@
-import { useEffect, useState } from 'react'
-import { DesktopWarning } from './components/shared/DesktopWarning'
-import { MobileViewport } from './components/shared/MobileViewport'
+import { useState } from 'react'
 import { PhoneFrame } from './components/shared/PhoneFrame'
 import { ARScreen } from './screens/ARScreen'
 import { CameraScreen } from './screens/CameraScreen'
@@ -8,8 +6,6 @@ import { FriendsScreen } from './screens/FriendsScreen'
 import { GettingCloserScreen } from './screens/GettingCloserScreen'
 import { LoadingScreen } from './screens/LoadingScreen'
 import { PostScreen } from './screens/PostScreen'
-
-const DESKTOP_BREAKPOINT = 512
 
 function App() {
   const [screen, setScreen] = useState('friends')
@@ -19,25 +15,8 @@ function App() {
   const [noteUnlocked, setNoteUnlocked] = useState(false)
   const [capturedPhoto, setCapturedPhoto] = useState(null)
 
-  const [isMobileWidth, setIsMobileWidth] = useState(
-    () => window.innerWidth <= DESKTOP_BREAKPOINT,
-  )
-  const [desktopWarningDismissed, setDesktopWarningDismissed] = useState(false)
-
-  useEffect(() => {
-    function checkWidth() {
-      setIsMobileWidth(window.innerWidth <= DESKTOP_BREAKPOINT)
-    }
-    window.addEventListener('resize', checkWidth)
-    return () => window.removeEventListener('resize', checkWidth)
-  }, [])
-
-  if (!isMobileWidth && !desktopWarningDismissed) {
-    return <DesktopWarning onContinue={() => setDesktopWarningDismissed(true)} />
-  }
-
-  const content = (
-    <>
+  return (
+    <PhoneFrame>
       {screen === 'friends' && (
         <FriendsScreen
           onOpenCamera={() => setScreen('camera')}
@@ -77,16 +56,7 @@ function App() {
           }}
         />
       )}
-    </>
-  )
-
-  // Real mobile viewport: fill it edge-to-edge (100dvh, scaled canvas, no
-  // decorative bezel). Desktop (after dismissing the warning): the bezel
-  // mockup, as before.
-  return isMobileWidth ? (
-    <MobileViewport>{content}</MobileViewport>
-  ) : (
-    <PhoneFrame>{content}</PhoneFrame>
+    </PhoneFrame>
   )
 }
 
