@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Check, Lock, RefreshCw } from 'lucide-react'
 import { MayaPill } from '../shared/MayaPill'
+import backCamera from '../../assets/back_camera_1.png'
+import frontCamera from '../../assets/frlont_camera_1.png'
 
 const BACK_TEXT = 'This is a new feature I made on BeReal! Pretty cool right?'
 
@@ -45,9 +47,18 @@ export function ARNoteCard({ state }) {
             style={{ backfaceVisibility: 'hidden' }}
           >
             {state === 'revealed' ? (
-              <span className="flex h-full w-full items-center justify-center px-3 text-center text-[13px] font-medium text-white">
-                Photo goes here
-              </span>
+              <>
+                <img
+                  src={backCamera}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+                <img
+                  src={frontCamera}
+                  alt=""
+                  className="absolute left-2 top-[7px] h-[75px] w-[56px] rounded-[6px] border border-white object-cover"
+                />
+              </>
             ) : (
               <>
                 <div className="absolute left-2 top-[7px] h-[65px] w-[47px] rounded-[6px] bg-white" />
