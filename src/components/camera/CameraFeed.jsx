@@ -1,7 +1,7 @@
 import { CameraControls } from './CameraControls'
 import { FrontCameraPreview } from './FrontCameraPreview'
 
-export function CameraFeed({ rearVideoRef, rearError }) {
+export function CameraFeed({ rearVideoRef, rearError, frontVideoRef, frontIsLive }) {
   return (
     <div className="relative isolate mx-4 mt-[95px] h-[537px] shrink-0 overflow-hidden rounded-[32px] bg-bereal-surface">
       {/* relative + z-0: actively-playing <video> is promoted to its own
@@ -20,7 +20,7 @@ export function CameraFeed({ rearVideoRef, rearError }) {
           Camera unavailable. Check permissions and try again.
         </div>
       )}
-      <FrontCameraPreview />
+      <FrontCameraPreview videoRef={frontVideoRef} isLive={frontIsLive} />
       <CameraControls />
     </div>
   )

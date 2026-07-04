@@ -2,7 +2,16 @@ import { ChevronDown, Lock, MapPin, Music, Pencil, User, X } from 'lucide-react'
 import { useState } from 'react'
 import { BackButton } from '../components/camera/BackButton'
 
-export function PostScreen({ onBack, photo }) {
+// Darker frosted grey pill, matching the real BeReal app — visible
+// against any background while staying semi-transparent.
+const GLASS_PILL_STYLE = {
+  background: 'rgba(60, 60, 60, 0.7)',
+  backdropFilter: 'blur(10px)',
+  WebkitBackdropFilter: 'blur(10px)',
+  border: 'none',
+}
+
+export function PostScreen({ onBack, photo, frontPhoto }) {
   const [noteActive, setNoteActive] = useState(false)
   const [noteText, setNoteText] = useState('')
 
@@ -55,15 +64,25 @@ export function PostScreen({ onBack, photo }) {
               <img src={photo} alt="" className="absolute inset-0 h-full w-full object-cover" />
             )}
 
-            {/* Front camera placeholder — static grey box only, no feed.
-                Safari on iOS doesn't reliably support two simultaneous
-                camera streams, so this never becomes a real preview. */}
-            <div className="absolute left-3 top-3 h-[160px] w-[120px] rounded-2xl border border-black bg-bereal-surface2" />
+            {/* Front camera: the still frame grabbed at shutter-press
+                time on CameraScreen (mobile, when the live preview came
+                up), or the same static grey placeholder as before if
+                there's no front photo (desktop, or the stream failed). */}
+            {frontPhoto ? (
+              <img
+                src={frontPhoto}
+                alt=""
+                className="absolute left-3 top-3 h-[160px] w-[120px] rounded-2xl border border-black object-cover"
+              />
+            ) : (
+              <div className="absolute left-3 top-3 h-[160px] w-[120px] rounded-2xl border border-black bg-bereal-surface2" />
+            )}
 
             <button
               type="button"
               onClick={() => setNoteActive(true)}
-              className="absolute left-[258px] top-[19px] flex h-[41px] w-[127px] items-center justify-center gap-1.5 rounded-full bg-bereal-surface2"
+              className="absolute left-[258px] top-[19px] flex h-[41px] w-[127px] items-center justify-center gap-1.5 rounded-full"
+              style={GLASS_PILL_STYLE}
             >
               <Pencil size={16} className="text-bereal-ink" />
               <span className="text-[14px] font-medium tracking-[-0.28px] text-bereal-ink">
@@ -78,10 +97,13 @@ export function PostScreen({ onBack, photo }) {
           pills (default) to 3 (note active, location pill removed since
           location is always on when sending a note). */}
       <div className="absolute top-[670px] flex h-[41px] items-center gap-4 left-1/2 -translate-x-1/2">
-        <div className="flex h-[41px] w-[50px] items-center justify-center rounded-full bg-bereal-surface2">
+        <div className="flex h-[41px] w-[50px] items-center justify-center rounded-full" style={GLASS_PILL_STYLE}>
           <User size={18} className="text-bereal-ink" />
         </div>
-        <div className="flex h-[41px] w-[130px] items-center justify-center gap-1.5 rounded-full bg-bereal-surface2">
+        <div
+          className="flex h-[41px] w-[130px] items-center justify-center gap-1.5 rounded-full"
+          style={GLASS_PILL_STYLE}
+        >
           <Lock size={16} className="text-bereal-ink" />
           <span className="text-[14px] font-medium tracking-[-0.28px] text-bereal-ink">
             My Friends
@@ -89,14 +111,17 @@ export function PostScreen({ onBack, photo }) {
           <ChevronDown size={14} className="text-bereal-ink" />
         </div>
         {!noteActive && (
-          <div className="flex h-[41px] w-[76px] items-center justify-center gap-1 rounded-full bg-bereal-surface2">
+          <div
+            className="flex h-[41px] w-[76px] items-center justify-center gap-1 rounded-full"
+            style={GLASS_PILL_STYLE}
+          >
             <MapPin size={14} className="text-bereal-ink" />
             <span className="text-[14px] font-medium tracking-[-0.28px] text-bereal-ink">
               On
             </span>
           </div>
         )}
-        <div className="flex h-[41px] w-[49px] items-center justify-center rounded-full bg-bereal-surface2">
+        <div className="flex h-[41px] w-[49px] items-center justify-center rounded-full" style={GLASS_PILL_STYLE}>
           <Music size={18} className="text-bereal-ink" />
         </div>
       </div>
