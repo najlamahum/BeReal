@@ -289,7 +289,7 @@ export function OnboardingScreen({ onComplete }) {
           (exiting ? 'animate-fade-out' : 'opacity-0 animate-fade-in-up-subtitle')
         }
       >
-        Introducing Real World Notes
+        Introducing AR Notes
       </p>
     )
   } else if (phase === 'slides') {

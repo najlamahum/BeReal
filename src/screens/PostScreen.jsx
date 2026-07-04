@@ -1,6 +1,7 @@
 import { ChevronDown, Lock, MapPin, Music, Pencil, User, X } from 'lucide-react'
 import { useState } from 'react'
 import { BackButton } from '../components/camera/BackButton'
+import frontCameraStill from '../assets/frlont_camera_1.png'
 
 // Darker frosted grey pill, matching the real BeReal app — visible
 // against any background while staying semi-transparent.
@@ -11,7 +12,7 @@ const GLASS_PILL_STYLE = {
   border: 'none',
 }
 
-export function PostScreen({ onBack, photo, frontPhoto }) {
+export function PostScreen({ onBack, photo }) {
   const [noteActive, setNoteActive] = useState(false)
   const [noteText, setNoteText] = useState('')
 
@@ -64,19 +65,13 @@ export function PostScreen({ onBack, photo, frontPhoto }) {
               <img src={photo} alt="" className="absolute inset-0 h-full w-full object-cover" />
             )}
 
-            {/* Front camera: the still frame grabbed at shutter-press
-                time on CameraScreen (mobile, when the live preview came
-                up), or the same static grey placeholder as before if
-                there's no front photo (desktop, or the stream failed). */}
-            {frontPhoto ? (
-              <img
-                src={frontPhoto}
-                alt=""
-                className="absolute left-3 top-3 h-[160px] w-[120px] rounded-2xl border border-black object-cover"
-              />
-            ) : (
-              <div className="absolute left-3 top-3 h-[160px] w-[120px] rounded-2xl border border-black bg-bereal-surface2" />
-            )}
+            {/* Front camera: always this static asset, on every device —
+                no live feed, no per-device fallback. */}
+            <img
+              src={frontCameraStill}
+              alt=""
+              className="absolute left-3 top-3 h-[160px] w-[120px] rounded-2xl border border-black object-cover"
+            />
 
             <button
               type="button"

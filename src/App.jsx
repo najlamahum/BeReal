@@ -19,7 +19,6 @@ function App() {
   // read, so the "1 new note" badge shouldn't come back.
   const [noteUnlocked, setNoteUnlocked] = useState(false)
   const [capturedPhoto, setCapturedPhoto] = useState(null)
-  const [capturedFrontPhoto, setCapturedFrontPhoto] = useState(null)
 
   return (
     <PhoneFrame>
@@ -38,9 +37,8 @@ function App() {
       {screen === 'camera' && (
         <CameraScreen
           onBack={() => setScreen('friends')}
-          onCapture={(photo, frontPhoto) => {
+          onCapture={(photo) => {
             setCapturedPhoto(photo)
-            setCapturedFrontPhoto(frontPhoto)
             setScreen('loading')
           }}
         />
@@ -52,11 +50,7 @@ function App() {
         />
       )}
       {screen === 'post' && (
-        <PostScreen
-          photo={capturedPhoto}
-          frontPhoto={capturedFrontPhoto}
-          onBack={() => setScreen('camera')}
-        />
+        <PostScreen photo={capturedPhoto} onBack={() => setScreen('camera')} />
       )}
       {screen === 'ar-getting-closer' && (
         <GettingCloserScreen onComplete={() => setScreen('ar')} />

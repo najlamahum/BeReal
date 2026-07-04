@@ -4,27 +4,26 @@ import { CaptureButton } from '../components/camera/CaptureButton'
 import { ModeToggle } from '../components/camera/ModeToggle'
 import { Header } from '../components/shared/Header'
 import { useCamera } from '../hooks/useCamera'
-import { useFrontCamera } from '../hooks/useFrontCamera'
-
-function grabFrame(video) {
-  if (!video || !video.videoWidth) return null
-  const canvas = document.createElement('canvas')
-  canvas.width = video.videoWidth
-  canvas.height = video.videoHeight
-  canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height)
-  return canvas.toDataURL('image/jpeg', 0.9)
-}
 
 export function CameraScreen({ onBack, onCapture }) {
+  // The only camera view on this screen — rear-facing on mobile, and on
+  // desktop (which has no rear camera) getUserMedia's facingMode:
+  // 'environment' is just an "ideal" hint, so the browser falls back to
+  // whatever camera exists (the built-in front-facing webcam) with no
+  // extra logic needed here.
   const { rearVideoRef, rearError } = useCamera()
-  const { frontVideoRef, isLive: frontIsLive } = useFrontCamera()
 
   function handleCapture() {
-    const rearPhoto = grabFrame(rearVideoRef.current)
-    // Only grab a front still if the live preview actually came up —
-    // otherwise PostScreen falls back to its own grey placeholder.
-    const frontPhoto = frontIsLive ? grabFrame(frontVideoRef.current) : null
-    onCapture(rearPhoto, frontPhoto)
+    const video = rearVideoRef.current
+    if (!video || !video.videoWidth) {
+      onCapture(null)
+      return
+    }
+    const canvas = document.createElement('canvas')
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
+    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height)
+    onCapture(canvas.toDataURL('image/jpeg', 0.9))
   }
 
   return (
@@ -39,12 +38,7 @@ export function CameraScreen({ onBack, onCapture }) {
       {/* Fixed 537px height — matches PostScreen's photo placeholder card
           exactly, so the feed and the post-capture preview read as the
           same aspect ratio instead of the feed looming taller. */}
-      <CameraFeed
-        rearVideoRef={rearVideoRef}
-        rearError={rearError}
-        frontVideoRef={frontVideoRef}
-        frontIsLive={frontIsLive}
-      />
+      <CameraFeed rearVideoRef={rearVideoRef} rearError={rearError} />
 
       <ModeToggle />
       <div className="pb-2 pt-2">
