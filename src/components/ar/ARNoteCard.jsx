@@ -85,7 +85,7 @@ export function ARNoteCard({ state, offset = { x: 0, y: 0 } }) {
 
           {/* back */}
           <div
-            className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-[10px] bg-white px-3"
+            className="absolute inset-0 overflow-hidden rounded-[10px] bg-white px-[15px] pt-[15px]"
             style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
           >
             <p className="text-left text-[13px] font-medium text-black">{BACK_TEXT}</p>

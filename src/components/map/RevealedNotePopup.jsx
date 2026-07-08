@@ -72,7 +72,7 @@ export function RevealedNotePopup({ onDismiss }) {
           </div>
 
           <div
-            className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-[10px] bg-white px-1.5"
+            className="absolute inset-0 overflow-hidden rounded-[10px] bg-white px-1.5 pt-2"
             style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
           >
             <p className="text-left text-[8px] font-medium leading-tight text-black">
