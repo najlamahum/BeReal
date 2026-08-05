@@ -1,5 +1,5 @@
 import { Minus, Plus } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch'
 import mapImage from '../../assets/mock-map.png'
 import { MapCounterScale } from './MapCounterScale'
@@ -21,8 +21,6 @@ const PLAIN_PINS = [
 
 const NOTE_PIN = { left: '48.26%', top: '49.9%' } // San Francisco, near city center
 
-const PROXIMITY_POPUP_DURATION_MS = 1500
-
 export function FriendsMap({
   onOpenNote,
   showRevealedPopup,
@@ -30,21 +28,11 @@ export function FriendsMap({
   hideNoteBadge,
 }) {
   const [showPopup, setShowPopup] = useState(false)
-  const timerRef = useRef(null)
 
   function advanceToAR() {
-    clearTimeout(timerRef.current)
     setShowPopup(false)
     onOpenNote()
   }
-
-  useEffect(() => {
-    if (!showPopup) return
-    timerRef.current = setTimeout(advanceToAR, PROXIMITY_POPUP_DURATION_MS)
-    return () => clearTimeout(timerRef.current)
-    // advanceToAR is stable enough here — only showPopup should retrigger this
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showPopup])
 
   return (
     <div className="relative min-h-0 flex-1 w-full overflow-hidden rounded-[25px] bg-white">

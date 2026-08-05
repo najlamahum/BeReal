@@ -4,8 +4,7 @@ import { MayaPill } from '../shared/MayaPill'
 // Matches Figma's friends-2: a gold "Travel Xm to unlock" pill above a
 // small locked-note preview bubble, appearing near the pin the user just
 // tapped — an overlay on the map itself, not a screen change. Tapping the
-// card advances straight to the AR flow (rather than only via the
-// auto-advance timer in FriendsMap).
+// card is the only way to advance into the AR flow.
 // The 45px (pin's own constant 40px height + 5px gap) is applied here,
 // inside the parent MapCounterScale's scale(1/currentScale) transform —
 // composing in that order is what keeps it a constant 45 screen-pixels at
