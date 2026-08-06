@@ -3,7 +3,6 @@ import mockArBackground from '../assets/mock-ar-background.png'
 import { ARBackground } from '../components/ar/ARBackground'
 import { ARNoteCard } from '../components/ar/ARNoteCard'
 import { ARScanIcon } from '../components/ar/ARScanIcon'
-import { MotionPermissionPrompt } from '../components/ar/MotionPermissionPrompt'
 import { BackButton } from '../components/camera/BackButton'
 import { CaptureButton } from '../components/camera/CaptureButton'
 import { useCamera } from '../hooks/useCamera'
@@ -68,15 +67,24 @@ export function ARScreen({ onBack }) {
   const parallaxEnabled = isMobile && motionPermission !== 'pending' && motionPermission !== 'denied'
   const offset = useDeviceOrientationParallax(parallaxEnabled)
 
-  async function handleAllowMotion() {
+  async function requestMotionPermission() {
     try {
       const result = await DeviceOrientationEvent.requestPermission()
       setMotionPermission(result === 'granted' ? 'granted' : 'denied')
     } catch {
       // Denied, dismissed, or the call itself failed — proceed without
-      // parallax rather than getting stuck on the prompt.
+      // parallax rather than getting stuck pending forever.
       setMotionPermission('denied')
     }
+  }
+
+  // iOS won't grant DeviceOrientationEvent access without a user gesture,
+  // but there's no dedicated "allow motion" screen anymore — Safari's own
+  // camera prompt is the only permission ask in this flow now. So the
+  // first tap anywhere on this screen doubles as that gesture, requested
+  // silently in the background instead of blocking on its own prompt.
+  function handleScreenTap() {
+    if (motionPermission === 'pending') requestMotionPermission()
   }
 
   // Advance out of 'waiting-camera' once the feed is actually playing —
@@ -102,18 +110,7 @@ export function ARScreen({ onBack }) {
   }
 
   return (
-    <div className="relative h-full bg-bereal-black">
-      {/* Rendered as an overlay, not an early return before the rest of
-          the tree — the <video> below must mount immediately so its ref
-          is attached by the time useCamera's getUserMedia() promise
-          resolves. An early return here would delay the video element's
-          mount until after the prompt is dismissed, and useCamera only
-          attaches the stream once, so a still-null ref at that point
-          would silently strand the stream with nothing to play it. */}
-      {phase === 'active' && motionPermission === 'pending' && (
-        <MotionPermissionPrompt onAllow={handleAllowMotion} />
-      )}
-
+    <div className="relative h-full bg-bereal-black" onClick={handleScreenTap}>
       {/* Same look as GettingCloserScreen (screen 1) — z-50 keeps it above
           everything else in this component regardless of DOM order, so
           Safari's camera prompt reads as still being over "screen 1"
