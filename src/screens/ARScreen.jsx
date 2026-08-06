@@ -49,7 +49,16 @@ export function ARScreen({ onBack }) {
     return needsExplicitPermission ? 'pending' : 'not-needed'
   })
 
-  const { rearVideoRef, rearError } = useCamera({ enabled: isMobile })
+  // Deferred until the "unlocking" coaching screen has fully played —
+  // requesting getUserMedia (and, on iOS, the motion-permission prompt
+  // below) the instant this component mounts pops a native permission
+  // dialog that visually competes with the coaching overlay for the same
+  // 1.5s window. Users who take a moment to respond to that dialog miss
+  // the overlay entirely, since it disappears on schedule underneath it
+  // regardless — this makes it look like the coaching sequence got
+  // skipped the moment permission is granted, when really it just played
+  // unseen behind the permission UI.
+  const { rearVideoRef, rearError } = useCamera({ enabled: isMobile && phase === 'active' })
   const parallaxEnabled = isMobile && motionPermission !== 'pending' && motionPermission !== 'denied'
   const offset = useDeviceOrientationParallax(parallaxEnabled)
 
@@ -84,7 +93,9 @@ export function ARScreen({ onBack }) {
           mount until after the prompt is dismissed, and useCamera only
           attaches the stream once, so a still-null ref at that point
           would silently strand the stream with nothing to play it. */}
-      {motionPermission === 'pending' && <MotionPermissionPrompt onAllow={handleAllowMotion} />}
+      {phase === 'active' && motionPermission === 'pending' && (
+        <MotionPermissionPrompt onAllow={handleAllowMotion} />
+      )}
 
       <BackButton
         onClick={onBack}
