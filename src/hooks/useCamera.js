@@ -16,11 +16,20 @@ function stopStream(stream) {
 export function useCamera({ enabled = true } = {}) {
   const rearVideoRef = useRef(null)
   const [rearError, setRearError] = useState(null)
+  // Distinct from just having a stream attached — callers that need to
+  // know the feed is actually rendering frames (not just mid-permission
+  // or mid-buffering) should wait on this instead.
+  const [rearReady, setRearReady] = useState(false)
 
   useEffect(() => {
     if (!enabled) return
     let rearStream
     let cancelled = false
+    let videoEl
+
+    function handleReady() {
+      setRearReady(true)
+    }
 
     async function start() {
       try {
@@ -32,7 +41,14 @@ export function useCamera({ enabled = true } = {}) {
           stopStream(rearStream)
           return
         }
-        if (rearVideoRef.current) rearVideoRef.current.srcObject = rearStream
+        videoEl = rearVideoRef.current
+        if (videoEl) {
+          videoEl.srcObject = rearStream
+          // Either is a fine signal that frames are actually rendering;
+          // whichever the browser fires first wins, the other is a no-op.
+          videoEl.addEventListener('playing', handleReady)
+          videoEl.addEventListener('loadedmetadata', handleReady)
+        }
       } catch (err) {
         if (!cancelled) setRearError(err)
       }
@@ -43,8 +59,10 @@ export function useCamera({ enabled = true } = {}) {
     return () => {
       cancelled = true
       stopStream(rearStream)
+      videoEl?.removeEventListener('playing', handleReady)
+      videoEl?.removeEventListener('loadedmetadata', handleReady)
     }
   }, [enabled])
 
-  return { rearVideoRef, rearError }
+  return { rearVideoRef, rearError, rearReady }
 }

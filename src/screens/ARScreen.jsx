@@ -14,28 +14,37 @@ const SUCCESS_TOAST_MS = 900
 const MOBILE_MAX_WIDTH = 512
 const NO_OFFSET = { x: 0, y: 0 }
 
-// backdrop-filter needs to heavily obscure the feed behind it — the
-// background image should barely be legible through this wash.
+// backdrop-filter still blurs the feed heavily, but the wash itself is
+// light — this is meant to read as frosted glass (surroundings visible,
+// just softened), not an opaque cover.
 const UNLOCKING_OVERLAY_STYLE = {
-  background: 'rgba(0, 0, 0, 0.6)',
+  background: 'rgba(0, 0, 0, 0.25)',
   backdropFilter: 'blur(40px)',
   WebkitBackdropFilter: 'blur(40px)',
 }
 
 export function ARScreen({ onBack }) {
+  // Live rear-camera + device-tilt parallax on mobile; the static mock
+  // image (unchanged) everywhere else, per spec.
+  const [isMobile] = useState(() => window.innerWidth <= MOBILE_MAX_WIDTH)
+
   // Matches Figma's friends-12 → friends-4 transition: the AR view first
   // appears "unlocking" (translucent wash + compass + prompt), then clears
   // to the normal tap-to-unlock view — kept as one mounted component (not
   // a screen swap) so the camera feed/brackets/note card don't remount.
-  const [phase, setPhase] = useState('unlocking') // 'unlocking' | 'active'
+  //
+  // On mobile there's a phase before that: 'waiting-camera' renders the
+  // same black-screen look as GettingCloserScreen (screen 1) so Safari's
+  // permission prompt appears over that neutral look rather than over the
+  // "Move phone to start" unlocking screen — see the useCamera call below.
+  // Desktop has nothing to wait on, so it skips straight to 'unlocking'.
+  const [phase, setPhase] = useState(() => (isMobile ? 'waiting-camera' : 'unlocking'))
+  // 'waiting-camera' | 'unlocking' | 'active'
+
   // The unlock trigger is the capture button, not the card itself — this
   // state lives here (not in ARNoteCard) so CaptureButton, a sibling, can
   // drive it.
   const [noteState, setNoteState] = useState('locked') // 'locked' | 'success' | 'revealed'
-
-  // Live rear-camera + device-tilt parallax on mobile; the static mock
-  // image (unchanged) everywhere else, per spec.
-  const [isMobile] = useState(() => window.innerWidth <= MOBILE_MAX_WIDTH)
 
   // iOS gates DeviceOrientationEvent behind an explicit requestPermission()
   // call that must run inside a user-gesture handler — it can't be fired
@@ -49,16 +58,13 @@ export function ARScreen({ onBack }) {
     return needsExplicitPermission ? 'pending' : 'not-needed'
   })
 
-  // Deferred until the "unlocking" coaching screen has fully played —
-  // requesting getUserMedia (and, on iOS, the motion-permission prompt
-  // below) the instant this component mounts pops a native permission
-  // dialog that visually competes with the coaching overlay for the same
-  // 1.5s window. Users who take a moment to respond to that dialog miss
-  // the overlay entirely, since it disappears on schedule underneath it
-  // regardless — this makes it look like the coaching sequence got
-  // skipped the moment permission is granted, when really it just played
-  // unseen behind the permission UI.
-  const { rearVideoRef, rearError } = useCamera({ enabled: isMobile && phase === 'active' })
+  // Requested as soon as the AR flow begins on mobile — while 'waiting-
+  // camera' is still showing its black look — so Safari's prompt lands on
+  // that neutral screen instead of racing the "unlocking" coaching screen.
+  const { rearVideoRef, rearReady, rearError } = useCamera({ enabled: isMobile })
+  // A denied/failed camera falls back to the same static mock background
+  // desktop uses, rather than showing a live feed that never arrives.
+  const showLiveFeed = isMobile && !rearError
   const parallaxEnabled = isMobile && motionPermission !== 'pending' && motionPermission !== 'denied'
   const offset = useDeviceOrientationParallax(parallaxEnabled)
 
@@ -73,10 +79,21 @@ export function ARScreen({ onBack }) {
     }
   }
 
+  // Advance out of 'waiting-camera' once the feed is actually playing —
+  // or immediately on a denied/failed permission, so a "no" doesn't leave
+  // the user stuck on a black screen forever.
   useEffect(() => {
+    if (phase !== 'waiting-camera') return
+    if (rearReady || rearError) setPhase('unlocking')
+  }, [phase, rearReady, rearError])
+
+  // The "unlocking" duration only starts once we've actually entered that
+  // phase — on mobile that's after the camera resolves, not on mount.
+  useEffect(() => {
+    if (phase !== 'unlocking') return
     const timer = setTimeout(() => setPhase('active'), UNLOCKING_DURATION_MS)
     return () => clearTimeout(timer)
-  }, [])
+  }, [phase])
 
   function handleCapturePress() {
     if (noteState !== 'locked') return
@@ -97,6 +114,23 @@ export function ARScreen({ onBack }) {
         <MotionPermissionPrompt onAllow={handleAllowMotion} />
       )}
 
+      {/* Same look as GettingCloserScreen (screen 1) — z-50 keeps it above
+          everything else in this component regardless of DOM order, so
+          Safari's camera prompt reads as still being over "screen 1"
+          rather than over the unlocking/live view underneath. */}
+      {phase === 'waiting-camera' && (
+        <div className="absolute inset-0 z-50 flex flex-col bg-bereal-black">
+          <h1 className="absolute left-0 right-0 top-[285px] text-center text-[24px] font-medium tracking-[-0.48px] text-bereal-ink">
+            BeReal.
+          </h1>
+          <div className="flex flex-1 items-center justify-center">
+            <div className="animate-pulse">
+              <ARScanIcon size={80} />
+            </div>
+          </div>
+        </div>
+      )}
+
       <BackButton
         onClick={onBack}
         size={44}
@@ -112,27 +146,27 @@ export function ARScreen({ onBack }) {
       </h1>
 
       <div className="absolute left-0 top-[145px] h-[537px] w-full overflow-hidden rounded-[20px]">
-        {isMobile ? (
-          <>
-            {/* relative + z-0: an actively-playing <video> gets promoted
-                to its own compositor layer in Chrome/Safari and can paint
-                above z-indexed siblings regardless of DOM order unless
-                it's pinned into the normal stacking order explicitly. */}
-            <video
-              ref={rearVideoRef}
-              autoPlay
-              playsInline
-              muted
-              className="relative z-0 h-full w-full object-cover"
-            />
-            {rearError && (
-              <div className="absolute inset-0 flex items-center justify-center px-8 text-center text-[13px] text-bereal-muted">
-                Camera unavailable. Check permissions and try again.
-              </div>
-            )}
-          </>
-        ) : (
-          <ARBackground imageSrc={mockArBackground} />
+        {/* The <video> mounts whenever isMobile, independent of
+            showLiveFeed/phase, so its ref is attached and ready the
+            instant useCamera's getUserMedia() promise resolves — an
+            error just hides it behind the mock background below rather
+            than unmounting it. */}
+        {isMobile && (
+          <video
+            ref={rearVideoRef}
+            autoPlay
+            playsInline
+            muted
+            className={
+              'h-full w-full object-cover ' + (showLiveFeed ? 'relative z-0' : 'hidden')
+            }
+          />
+        )}
+        {!showLiveFeed && <ARBackground imageSrc={mockArBackground} />}
+        {isMobile && rearError && (
+          <div className="absolute inset-0 flex items-center justify-center px-8 text-center text-[13px] text-bereal-muted">
+            Camera unavailable. Check permissions and try again.
+          </div>
         )}
         <ARNoteCard state={noteState} offset={isMobile ? offset : NO_OFFSET} />
 
